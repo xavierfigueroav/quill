@@ -1,0 +1,48 @@
+/* 
+    Created on : 29/04/2018, 23:18:50
+    Author     : Galo Xavier Figueroa Villacreses
+*/
+
+.text-area{
+    
+    -fx-font-family: Consolas;
+    -fx-font-size: 15;
+    -fx-highlight-fill:black;
+    
+    
+    -fx-border-width: 0; 
+    -fx-region-background: null;
+    
+}
+.text-area:focused {
+    
+    -fx-border-width: 0; 
+    -fx-region-background: null;
+    
+}
+
+
+.text-area .content {
+    
+    -fx-background-color: #fff;
+    -fx-background-radius: 0, 0, 0, 0;
+}
+
+.text-area:focused .content {
+    
+    -fx-background-color: #fff;
+    -fx-background-radius: 0, 0, 0, 0;
+}
+
+.menu-bar {
+    
+    -fx-fill: black;
+    -fx-background-color: #fff;
+    -fx-selection-bar: aliceblue;
+}
+
+
+.menu:hover{
+    -fx-background-color: aliceblue;
+    -fx-fill: black;
+}
