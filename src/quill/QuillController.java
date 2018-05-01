@@ -19,14 +19,18 @@ package quill;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.nio.file.StandardOpenOption;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -38,57 +42,115 @@ public class QuillController implements Initializable {
     
     @FXML
     private TextArea paper;
-    
     private Path filePath;
+    final private EventHandler<KeyEvent> texChangeHandler = event -> handleTextChange(event);
+    private boolean textWasChanged = false;
+    
+    @FXML
+    private void handleNew(ActionEvent event){
+        paper.setText("");
+        filePath = null;
+        textWasChanged = false;
+        paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+    }
     
     @FXML
     private void handleOpenMenu(ActionEvent event){
+        if(!paper.getText().isEmpty()){
+            System.out.println("Vas a perder lo que no hayas guardado");
+        }
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new ExtensionFilter("Python files","*.py"));
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Text files","*.txt"));
         File file = fileChooser.showOpenDialog(null);
-        String text = readFile(file);
-        paper.setText(text);
+        
+        if(file != null){
+            String text = readFile(file);
+            paper.setText(text);
+            textWasChanged = false;
+            paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        }
     }
     
     @FXML
     private void handleSaveMenu(ActionEvent event){
-        FileChooser fileChooser = new FileChooser();
-        File file = fileChooser.showSaveDialog(null);
+        
+        if(filePath == null){
+            
+            handleSaveAsMenu(new ActionEvent());
+            
+        } else {
+            writeFile();
+            textWasChanged = false;
+            paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        }
     }
     
     @FXML
     private void handleSaveAsMenu(ActionEvent event){
         FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Text files","*.txt"));
         File file = fileChooser.showSaveDialog(null);
+        
+        if(file != null){
+            
+            if(file.exists()){
+                file.delete();
+            }
+
+            writeFile(file);
+            textWasChanged = false;
+            paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        }
+    }
+    
+    @FXML
+    private void handleTextChange(KeyEvent event){
+        
+            System.out.println("Cambió");
+            textWasChanged = true;
+            paper.removeEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        
     }
     
     private String readFile(File file){
         filePath = file.toPath();
         
-        List<String> fileLines;
-        String text = "";
-        try{
-            fileLines = Files.readAllLines(filePath);
-            
-            
-            for(int i = 0; i < fileLines.size(); i++){
-                if(i == fileLines.size() - 1){
-                    text += fileLines.get(i);
-                } else {
-                    text += fileLines.get(i) + "\n";
-                }
-            }
-            
-        } catch(IOException io){
-            io.printStackTrace();
+        String text = null;
+        try {
+            text = Files.lines(filePath).collect(Collectors.joining("\n"));
+        } catch (IOException ex) {
+            System.out.println("Error al intentar leer archivo.");
         }
         
         return text;
     }
     
+    private void writeFile(File file){
+        
+        filePath = file.toPath();
+        
+        try{
+            Files.write(filePath,paper.getParagraphs(),StandardCharsets.UTF_8,StandardOpenOption.CREATE);
+        }catch(IOException io){
+            System.out.println("Error al intentar escribir archivo.");
+        }
+    }
+    
+    private void writeFile(){
+        
+        try{
+            Files.write(filePath,paper.getParagraphs(),StandardCharsets.UTF_8,StandardOpenOption.WRITE);
+        }catch(IOException io){
+            System.out.println("Error al intentar escribir archivo.");
+        }
+    }
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        
+        paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        
     }
     
 }
