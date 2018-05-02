@@ -23,12 +23,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
@@ -44,21 +54,49 @@ public class QuillController implements Initializable {
     private TextArea paper;
     private Path filePath;
     final private EventHandler<KeyEvent> texChangeHandler = event -> handleTextChange(event);
-    private boolean textWasChanged = false;
+    private boolean textHasChanged = false;
     
     @FXML
     private void handleNew(ActionEvent event){
+        
+        if(textHasChanged){
+            
+            ButtonData choice = showSaveConfirmation().get().getButtonData();
+            
+            if(choice.equals(ButtonData.YES)) handleSaveMenu(new ActionEvent());
+            
+            else if(choice.equals(ButtonData.NO)) generateANewDocument();
+            
+        } else generateANewDocument();
+    }
+    
+    private void generateANewDocument(){
+        
         paper.setText("");
         filePath = null;
-        textWasChanged = false;
+        textHasChanged = false;
         paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        
     }
     
     @FXML
     private void handleOpenMenu(ActionEvent event){
-        if(!paper.getText().isEmpty()){
-            System.out.println("Vas a perder lo que no hayas guardado");
-        }
+        
+        if(textHasChanged){
+            
+            ButtonData choice = showSaveConfirmation().get().getButtonData();
+            
+            if(choice.equals(ButtonData.YES)) handleSaveMenu(new ActionEvent());
+            
+            else if(choice.equals(ButtonData.NO)) openADocument();
+            
+        } else openADocument();
+        
+        
+    }
+    
+    private void openADocument(){
+        
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new ExtensionFilter("Text files","*.txt"));
         File file = fileChooser.showOpenDialog(null);
@@ -66,9 +104,10 @@ public class QuillController implements Initializable {
         if(file != null){
             String text = readFile(file);
             paper.setText(text);
-            textWasChanged = false;
+            textHasChanged = false;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
+        
     }
     
     @FXML
@@ -80,7 +119,7 @@ public class QuillController implements Initializable {
             
         } else {
             writeFile();
-            textWasChanged = false;
+            textHasChanged = false;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
     }
@@ -98,7 +137,7 @@ public class QuillController implements Initializable {
             }
 
             writeFile(file);
-            textWasChanged = false;
+            textHasChanged = false;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
     }
@@ -106,8 +145,7 @@ public class QuillController implements Initializable {
     @FXML
     private void handleTextChange(KeyEvent event){
         
-            System.out.println("Cambió");
-            textWasChanged = true;
+            textHasChanged = true;
             paper.removeEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         
     }
@@ -123,6 +161,23 @@ public class QuillController implements Initializable {
         }
         
         return text;
+    }
+    
+    private Optional<ButtonType> showSaveConfirmation(){
+        
+        ButtonType save = new ButtonType("Save", ButtonData.YES);
+        ButtonType doNotSave = new ButtonType("Do not save", ButtonData.NO);
+        ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+        
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        
+        alert.setTitle("Save confirmation");
+        alert.setHeaderText("Some changes have not been saved.\nDo you want to save them?");
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().addAll(save,doNotSave,cancel);
+        
+        return alert.showAndWait();
+        
     }
     
     private void writeFile(File file){
