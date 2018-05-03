@@ -6,39 +6,54 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane id="root" prefHeight="400" prefWidth="700" stylesheets="@../styles/quill.css"  xmlns:fx="http://javafx.com/fxml/1" fx:controller="quill.QuillController">
-    <children>
-        
-        <MenuBar
-            id="menuBar"
-            focusTraversable="false"
-            GridPane.columnIndex="0"
-            GridPane.rowIndex="0"
-        >
-            <menus>
-                <Menu text="File">
-                    <items>
-                        <MenuItem text="New" onAction="#handleNew"/>
-                        <MenuItem text="Open" onAction="#handleOpenMenu"/>
-                        <MenuItem text="Save" onAction="#handleSaveMenu"/>
-                        <MenuItem text="Save As" onAction="#handleSaveAsMenu"/>
-                    </items>
-                </Menu>
-                <Menu text="Help">
-                    <items>
-                        <MenuItem text="About" />
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-        
-        <TextArea
-            GridPane.hgrow="ALWAYS"
-            GridPane.vgrow="ALWAYS"
-            fx:id="paper"
-            GridPane.columnIndex="0"
-            GridPane.rowIndex="1"
-        />
-        
-    </children>
-</GridPane>
+<?import javafx.stage.Stage ?>
+
+<Stage title="Quill"
+       xmlns:fx="http://javafx.com/fxml/1"
+       fx:controller="quill.QuillController"
+       onCloseRequest="#handleCloseRequest">
+    <scene>
+        <Scene>
+            <root>
+                
+                <GridPane id="root" prefHeight="400" prefWidth="700" stylesheets="@../styles/quill.css">
+                    <children>
+
+                        <MenuBar
+                            id="menuBar"
+                            focusTraversable="false"
+                            GridPane.columnIndex="0"
+                            GridPane.rowIndex="0"
+                        >
+                            <menus>
+                                <Menu text="File">
+                                    <items>
+                                        <MenuItem text="New" onAction="#handleNew"/>
+                                        <MenuItem text="Open" onAction="#handleOpenMenu"/>
+                                        <MenuItem text="Save" onAction="#handleSaveMenu"/>
+                                        <MenuItem text="Save As" onAction="#handleSaveAsMenu"/>
+                                    </items>
+                                </Menu>
+                                <Menu text="Help">
+                                    <items>
+                                        <MenuItem text="About" />
+                                    </items>
+                                </Menu>
+                            </menus>
+                        </MenuBar>
+
+                        <TextArea
+                            GridPane.hgrow="ALWAYS"
+                            GridPane.vgrow="ALWAYS"
+                            fx:id="paper"
+                            GridPane.columnIndex="0"
+                            GridPane.rowIndex="1"
+                        />
+
+                    </children>
+                </GridPane>
+                
+            </root>
+        </Scene>
+    </scene>
+</Stage>

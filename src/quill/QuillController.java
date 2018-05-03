@@ -23,9 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -35,14 +32,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -54,12 +50,37 @@ public class QuillController implements Initializable {
     private TextArea paper;
     private Path filePath;
     final private EventHandler<KeyEvent> texChangeHandler = event -> handleTextChange(event);
-    private boolean textHasChanged = false;
+    private boolean changesAreSaved;
+    
+    @FXML
+    private void handleCloseRequest(WindowEvent event){
+        
+        if(!changesAreSaved){
+        
+            ButtonData choice = showSaveConfirmation().get().getButtonData();
+            
+            if(choice.equals(ButtonData.YES)) {
+                
+                handleSaveMenu(new ActionEvent());
+                
+                if(!changesAreSaved) event.consume();
+                
+            }
+            
+            else if(choice.equals(ButtonData.CANCEL_CLOSE)) event.consume();
+            
+            
+        } else {
+            // This else is necessary for the program to stop when there is no
+            // changes in the document and the window is closed.
+        }
+        
+    }
     
     @FXML
     private void handleNew(ActionEvent event){
         
-        if(textHasChanged){
+        if(!changesAreSaved){
             
             ButtonData choice = showSaveConfirmation().get().getButtonData();
             
@@ -74,7 +95,7 @@ public class QuillController implements Initializable {
         
         paper.setText("");
         filePath = null;
-        textHasChanged = false;
+        changesAreSaved = true;
         paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         
     }
@@ -82,7 +103,7 @@ public class QuillController implements Initializable {
     @FXML
     private void handleOpenMenu(ActionEvent event){
         
-        if(textHasChanged){
+        if(!changesAreSaved){
             
             ButtonData choice = showSaveConfirmation().get().getButtonData();
             
@@ -104,7 +125,7 @@ public class QuillController implements Initializable {
         if(file != null){
             String text = readFile(file);
             paper.setText(text);
-            textHasChanged = false;
+            changesAreSaved = true;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
         
@@ -119,7 +140,7 @@ public class QuillController implements Initializable {
             
         } else {
             writeFile();
-            textHasChanged = false;
+            changesAreSaved = true;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
     }
@@ -137,7 +158,7 @@ public class QuillController implements Initializable {
             }
 
             writeFile(file);
-            textHasChanged = false;
+            changesAreSaved = true;
             paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         }
     }
@@ -145,7 +166,7 @@ public class QuillController implements Initializable {
     @FXML
     private void handleTextChange(KeyEvent event){
         
-            textHasChanged = true;
+            changesAreSaved = false;
             paper.removeEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
         
     }
@@ -205,6 +226,7 @@ public class QuillController implements Initializable {
         // TODO
         
         paper.addEventHandler(KeyEvent.KEY_TYPED, texChangeHandler);
+        changesAreSaved = true;
         
     }
     
